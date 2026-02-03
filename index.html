@@ -2,10 +2,9 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Mapa IDHV - Ciudades</title>
+  <title>Mapa IDHV</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- Leaflet -->
   <link
     rel="stylesheet"
     href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -15,7 +14,6 @@
     html, body {
       height: 100%;
       margin: 0;
-      font-family: Arial, sans-serif;
     }
     #map {
       width: 100%;
@@ -35,15 +33,13 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
-  // Datos
   const ciudades = [
-    { ciudad: "Oporto", lon: -8.6291, lat: 41.1579 },
-    { ciudad: "Nápoles", lon: 14.2681, lat: 40.8518 },
-    { ciudad: "Berlín", lon: 13.4050, lat: 52.5200 },
-    { ciudad: "Estambul", lon: 28.9784, lat: 41.0082 }
+    { ciudad: "Oporto", lat: 41.1579, lon: -8.6291 },
+    { ciudad: "Nápoles", lat: 40.8518, lon: 14.2681 },
+    { ciudad: "Berlín", lat: 52.5200, lon: 13.4050 },
+    { ciudad: "Estambul", lat: 41.0082, lon: 28.9784 }
   ];
 
-  // Mapa principal
   const map = L.map("map");
 
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -53,35 +49,36 @@
   const bounds = [];
 
   ciudades.forEach((c, i) => {
-    const popupId = `mini-map-${i}`;
+    const popupId = `popup-map-${i}`;
 
-    const marker = L.circleMarker([c.lat, c.lon], {
-      radius: 8,
-      fillColor: "#2A81CB",
-      color: "#1F4E79",
-      weight: 1,
-      fillOpacity: 0.8
-    })
-    .addTo(map)
-    .bindPopup(`
+    const marker = L.marker([c.lat, c.lon]).addTo(map);
+
+    marker.bindPopup(`
       <strong>${c.ciudad}</strong>
       <div id="${popupId}" class="popup-map"></div>
     `);
 
-    // Crear el mini-mapa SOLO cuando se abre el popup
     marker.on("popupopen", () => {
-      const miniMap = L.map(popupId, {
-        attributionControl: false,
-        zoomControl: false,
-        dragging: false,
-        scrollWheelZoom: false,
-        doubleClickZoom: false
-      }).setView([c.lat, c.lon], 11);
+      const div = document.getElementById(popupId);
 
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png")
-        .addTo(miniMap);
+      if (!div.dataset.mapLoaded) {
+        const miniMap = L.map(div, {
+          zoomControl: true,
+          attributionControl: false
+        }).setView([c.lat, c.lon], 12);
 
-      L.marker([c.lat, c.lon]).addTo(miniMap);
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png")
+          .addTo(miniMap);
+
+        L.marker([c.lat, c.lon]).addTo(miniMap);
+
+        setTimeout(() => miniMap.invalidateSize(), 100);
+
+        L.DomEvent.disableClickPropagation(div);
+        L.DomEvent.disableScrollPropagation(div);
+
+        div.dataset.mapLoaded = "true";
+      }
     });
 
     bounds.push([c.lat, c.lon]);
@@ -92,4 +89,3 @@
 
 </body>
 </html>
-
