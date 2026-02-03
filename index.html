@@ -70,20 +70,12 @@
 
     // Crear el mini-mapa SOLO cuando se abre el popup
    marker.on("popupopen", () => {
-
-  const container = document.getElementById(popupId);
-
-  // ⚠️ Evita crear el mapa dos veces
-  if (container._leaflet_id) return;
-
-  const miniMap = L.map(container, {
+  const miniMap = L.map(popupId, {
     attributionControl: false,
-    zoomControl: true,
-    dragging: true,
-    scrollWheelZoom: true,
-    doubleClickZoom: true,
-    boxZoom: true,
-    keyboard: true
+    zoomControl: false,
+    dragging: false,
+    scrollWheelZoom: false,
+    doubleClickZoom: false
   }).setView([c.lat, c.lon], 11);
 
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png")
@@ -91,14 +83,10 @@
 
   L.marker([c.lat, c.lon]).addTo(miniMap);
 
-  // 🔑 CLAVE ABSOLUTA: esperar y recalcular tamaño
+  // 🔑 CLAVE: forzar el redibujado cuando el popup ya es visible
   setTimeout(() => {
     miniMap.invalidateSize();
-  }, 150);
-
-  // 🔒 Evita conflictos con el mapa principal
-  L.DomEvent.disableClickPropagation(container);
-  L.DomEvent.disableScrollPropagation(container);
+  }, 100);
 });
 
 
