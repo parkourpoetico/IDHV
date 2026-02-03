@@ -69,27 +69,13 @@
     `);
 
     // Crear el mini-mapa SOLO cuando se abre el popup
-   marker.on("popupopen", () => {
-  const miniMap = L.map(popupId, {
-    attributionControl: false,
-    zoomControl: false,
-    dragging: false,
-    scrollWheelZoom: false,
-    doubleClickZoom: false
-  }).setView([c.lat, c.lon], 11);
-
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png")
-    .addTo(miniMap);
-
-  L.marker([c.lat, c.lon]).addTo(miniMap);
-
-  // 🔑 CLAVE: forzar el redibujado cuando el popup ya es visible
-  setTimeout(() => {
-    miniMap.invalidateSize();
-  }, 100);
-});
-
-
+    marker.on("popupopen", () => {
+      const miniMap = L.map(popupId, {
+        attributionControl: false,
+        zoomControl: false,
+        dragging: false,
+        scrollWheelZoom: false,
+        doubleClickZoom: false
       }).setView([c.lat, c.lon], 11);
 
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png")
@@ -106,3 +92,4 @@
 
 </body>
 </html>
+
