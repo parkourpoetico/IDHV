@@ -71,11 +71,15 @@
     // Crear el mini-mapa SOLO cuando se abre el popup
     marker.on("popupopen", () => {
       const miniMap = L.map(popupId, {
-        attributionControl: false,
-        zoomControl: false,
-        dragging: false,
-        scrollWheelZoom: false,
-        doubleClickZoom: false
+  attributionControl: false,
+  zoomControl: true,      // 🔓 activar botones +/-
+  dragging: true,         // 🔓 permitir arrastrar
+  scrollWheelZoom: true,  // 🔓 zoom con rueda
+  doubleClickZoom: true,  // 🔓 zoom con doble clic
+  boxZoom: true,
+  keyboard: true
+})
+
       }).setView([c.lat, c.lon], 11);
 
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png")
