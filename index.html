@@ -5,6 +5,7 @@
   <title>Mapa IDHV – Visor</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
+  <!-- Leaflet CSS -->
   <link
     rel="stylesheet"
     href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -27,6 +28,7 @@
       flex: 1;
     }
 
+    /* Panel lateral */
     #side-panel {
       width: 360px;
       background: #ffffff;
@@ -36,10 +38,20 @@
     }
 
     #panel-header {
-      padding: 12px;
+      padding: 10px 12px;
       font-weight: bold;
       background: #f5f5f5;
       border-bottom: 1px solid #ddd;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    #close-panel {
+      border: none;
+      background: none;
+      font-size: 18px;
+      cursor: pointer;
     }
 
     #panel-map {
@@ -51,12 +63,17 @@
 
 <div id="container">
   <div id="map"></div>
+
   <div id="side-panel">
-    <div id="panel-header">Ciudad</div>
+    <div id="panel-header">
+      <span id="panel-title">Ciudad</span>
+      <button id="close-panel">✕</button>
+    </div>
     <div id="panel-map"></div>
   </div>
 </div>
 
+<!-- Leaflet JS -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
@@ -67,24 +84,30 @@
     { ciudad: "Estambul", lat: 41.0082, lon: 28.9784 }
   ];
 
-  // Mapa principal
+  /* =========================
+     MAPA PRINCIPAL
+     ========================= */
   const map = L.map("map");
+
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution: "&copy; OpenStreetMap contributors"
   }).addTo(map);
 
   const bounds = [];
 
-  // Panel lateral
+  /* =========================
+     PANEL LATERAL
+     ========================= */
   const panel = document.getElementById("side-panel");
-  const panelHeader = document.getElementById("panel-header");
+  const panelTitle = document.getElementById("panel-title");
+  const closeBtn = document.getElementById("close-panel");
 
-  // Mini-mapa (se reutiliza)
   let cityMap = null;
+  let cityMarker = null;
 
   function openCityPanel(ciudad) {
     panel.style.display = "flex";
-    panelHeader.textContent = ciudad.ciudad;
+    panelTitle.textContent = ciudad.ciudad;
 
     if (!cityMap) {
       cityMap = L.map("panel-map", {
@@ -100,19 +123,23 @@
 
     cityMap.setView([ciudad.lat, ciudad.lon], 12);
 
-    // Limpiar marcadores previos
-    cityMap.eachLayer(layer => {
-      if (layer instanceof L.Marker) {
-        cityMap.removeLayer(layer);
-      }
-    });
+    if (cityMarker) {
+      cityMap.removeLayer(cityMarker);
+    }
 
-    L.marker([ciudad.lat, ciudad.lon]).addTo(cityMap);
+    cityMarker = L.marker([ciudad.lat, ciudad.lon]).addTo(cityMap);
 
     setTimeout(() => cityMap.invalidateSize(), 100);
   }
 
-  // Marcadores principales
+  closeBtn.onclick = () => {
+    panel.style.display = "none";
+    setTimeout(() => map.invalidateSize(), 100);
+  };
+
+  /* =========================
+     MARCADORES PRINCIPALES
+     ========================= */
   ciudades.forEach(c => {
     const marker = L.circleMarker([c.lat, c.lon], {
       radius: 8,
