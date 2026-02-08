@@ -5,7 +5,6 @@
   <title>Mapa IDHV – Visor</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- Leaflet CSS -->
   <link
     rel="stylesheet"
     href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -16,105 +15,148 @@
       height: 100%;
       margin: 0;
       font-family: Arial, sans-serif;
+      overflow: hidden;
     }
 
-    #container {
-      display: flex;
-      height: 100%;
+    /* Vistas */
+    #map,
+    #city-view {
+      position: absolute;
+      inset: 0;
       width: 100%;
+      height: 100%;
+      transition: transform 0.35s ease, opacity 0.35s ease;
     }
 
-    #map {
-      flex: 1;
+    #city-view {
+      background: #fff;
+      z-index: 1000;
+      transform: translateX(100%);
+      opacity: 0;
     }
 
-    /* Panel lateral */
-    #side-panel {
-      width: 360px;
-      background: #ffffff;
-      border-left: 1px solid #ccc;
-      display: none;
-      flex-direction: column;
+    #city-view.active {
+      transform: translateX(0);
+      opacity: 1;
     }
 
-    #panel-header {
-      padding: 10px 12px;
-      font-weight: bold;
-      background: #f5f5f5;
-      border-bottom: 1px solid #ddd;
+    /* Barra superior */
+    #top-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 44px;
+      background: rgba(255,255,255,0.95);
+      z-index: 1100;
       display: flex;
-      justify-content: space-between;
       align-items: center;
+      padding: 0 10px;
+      box-sizing: border-box;
+      font-size: 14px;
     }
 
-    #close-panel {
-      border: none;
-      background: none;
-      font-size: 18px;
+    #back-btn {
+      margin-right: 10px;
       cursor: pointer;
+      font-weight: bold;
     }
 
-    #panel-map {
-      flex: 1;
+    #breadcrumb {
+      opacity: 0.8;
+    }
+
+    /* Mapa ciudad */
+    #city-map {
+      position: absolute;
+      top: 44px;
+      left: 0;
+      right: 0;
+      bottom: 0;
+    }
+
+    /* Botón flotante */
+    .floating-hint {
+      position: absolute;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.6);
+      color: white;
+      padding: 6px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      z-index: 500;
+    }
+
+    @media (max-width: 600px) {
+      #top-bar {
+        font-size: 13px;
+      }
     }
   </style>
 </head>
 <body>
 
-<div id="container">
-  <div id="map"></div>
+<!-- MAPA GENERAL -->
+<div id="map"></div>
+<div class="floating-hint">Haz clic en una ciudad</div>
 
-  <div id="side-panel">
-    <div id="panel-header">
-      <span id="panel-title">Ciudad</span>
-      <button id="close-panel">✕</button>
-    </div>
-    <div id="panel-map"></div>
+<!-- VISTA CIUDAD -->
+<div id="city-view">
+  <div id="top-bar">
+    <span id="back-btn">← Volver</span>
+    <span id="breadcrumb">Europa</span>
   </div>
+  <div id="city-map"></div>
 </div>
 
-<!-- Leaflet JS -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
   const ciudades = [
-    { ciudad: "Oporto", lat: 41.1579, lon: -8.6291 },
-    { ciudad: "Nápoles", lat: 40.8518, lon: 14.2681 },
-    { ciudad: "Berlín", lat: 52.5200, lon: 13.4050 },
-    { ciudad: "Estambul", lat: 41.0082, lon: 28.9784 }
+    { ciudad: "Oporto", lat: 41.1579, lon: -8.6291, region: "Europa" },
+    { ciudad: "Nápoles", lat: 40.8518, lon: 14.2681, region: "Europa" },
+    { ciudad: "Berlín", lat: 52.5200, lon: 13.4050, region: "Europa" },
+    { ciudad: "Estambul", lat: 41.0082, lon: 28.9784, region: "Europa / Asia" }
   ];
 
   /* =========================
-     MAPA PRINCIPAL
+     MAPA GENERAL
      ========================= */
   const map = L.map("map");
-
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution: "&copy; OpenStreetMap contributors"
   }).addTo(map);
 
   const bounds = [];
+  ciudades.forEach(c => bounds.push([c.lat, c.lon]));
+  map.fitBounds(bounds, { padding: [40, 40] });
+
+  let lastView = null;
 
   /* =========================
-     PANEL LATERAL
+     MAPA CIUDAD
      ========================= */
-  const panel = document.getElementById("side-panel");
-  const panelTitle = document.getElementById("panel-title");
-  const closeBtn = document.getElementById("close-panel");
-
   let cityMap = null;
   let cityMarker = null;
 
-  function openCityPanel(ciudad) {
-    panel.style.display = "flex";
-    panelTitle.textContent = ciudad.ciudad;
+  function openCity(ciudad) {
+    // Guardar estado del mapa general
+    lastView = {
+      center: map.getCenter(),
+      zoom: map.getZoom()
+    };
+
+    const cityView = document.getElementById("city-view");
+    cityView.classList.add("active");
+
+    document.getElementById("breadcrumb").textContent =
+      `${ciudad.region} → ${ciudad.ciudad}`;
 
     if (!cityMap) {
-      cityMap = L.map("panel-map", {
-        zoomControl: true
-      });
+      cityMap = L.map("city-map", { zoomControl: true });
 
-      // Capa SATÉLITE
       L.tileLayer(
         "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
         { attribution: "© Esri" }
@@ -123,22 +165,24 @@
 
     cityMap.setView([ciudad.lat, ciudad.lon], 12);
 
-    if (cityMarker) {
-      cityMap.removeLayer(cityMarker);
-    }
-
+    if (cityMarker) cityMap.removeLayer(cityMarker);
     cityMarker = L.marker([ciudad.lat, ciudad.lon]).addTo(cityMap);
 
-    setTimeout(() => cityMap.invalidateSize(), 100);
+    setTimeout(() => cityMap.invalidateSize(), 300);
   }
 
-  closeBtn.onclick = () => {
-    panel.style.display = "none";
-    setTimeout(() => map.invalidateSize(), 100);
+  document.getElementById("back-btn").onclick = () => {
+    document.getElementById("city-view").classList.remove("active");
+
+    if (lastView) {
+      map.setView(lastView.center, lastView.zoom);
+    }
+
+    setTimeout(() => map.invalidateSize(), 300);
   };
 
   /* =========================
-     MARCADORES PRINCIPALES
+     MARCADORES
      ========================= */
   ciudades.forEach(c => {
     const marker = L.circleMarker([c.lat, c.lon], {
@@ -146,15 +190,11 @@
       fillColor: "#2A81CB",
       color: "#1F4E79",
       weight: 1,
-      fillOpacity: 0.8
+      fillOpacity: 0.85
     }).addTo(map);
 
-    marker.on("click", () => openCityPanel(c));
-
-    bounds.push([c.lat, c.lon]);
+    marker.on("click", () => openCity(c));
   });
-
-  map.fitBounds(bounds, { padding: [40, 40] });
 </script>
 
 </body>
