@@ -15,10 +15,8 @@
       height: 100%;
       margin: 0;
       font-family: Georgia, serif;
-      overflow: hidden;
     }
 
-    /* Vistas */
     #map,
     #city-view {
       position: absolute;
@@ -33,7 +31,6 @@
       z-index: 1000;
     }
 
-    /* Botón volver */
     #back-btn {
       position: absolute;
       top: 14px;
@@ -46,7 +43,6 @@
       font-size: 14px;
     }
 
-    /* Popup narrativo */
     .story-popup {
       max-width: 260px;
     }
@@ -68,7 +64,7 @@
 <!-- MAPA GENERAL -->
 <div id="map"></div>
 
-<!-- MAPA CIUDAD -->
+<!-- MAPA DE CIUDAD -->
 <div id="city-view">
   <button id="back-btn">← Volver al mapa</button>
 </div>
@@ -79,8 +75,13 @@
   /* =========================
      DATOS
      ========================= */
+
   const ciudades = [
-    { ciudad: "Berlín", lat: 52.5200, lon: 13.4050 }
+    {
+      ciudad: "Berlín",
+      lat: 52.5200,
+      lon: 13.4050
+    }
   ];
 
   const puntosCiudad = {
@@ -90,8 +91,7 @@
         lat: 52.5219,
         lon: 13.4132,
         texto: "auf wiedersehen",
-        imagen:
-          "https://upload.wikimedia.org/wikipedia/commons/6/6f/Fernsehturm_Berlin_Alexanderplatz.jpg"
+        imagen: "images/images/berlin/alexanderplatz.jpg"
       }
     ]
   };
@@ -99,6 +99,7 @@
   /* =========================
      MAPA GENERAL
      ========================= */
+
   const map = L.map("map");
 
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -108,8 +109,9 @@
   map.setView([52, 10], 5);
 
   /* =========================
-     MAPA CIUDAD
+     MAPA DE CIUDAD
      ========================= */
+
   let cityMap = null;
   let cityMarkers = [];
 
@@ -117,9 +119,7 @@
     document.getElementById("city-view").style.display = "block";
 
     if (!cityMap) {
-      cityMap = L.map("city-view", {
-        zoomControl: true
-      });
+      cityMap = L.map("city-view");
 
       L.tileLayer(
         "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
@@ -163,6 +163,7 @@
   /* =========================
      MARCADOR MAPA GENERAL
      ========================= */
+
   ciudades.forEach(c => {
     const marker = L.circleMarker([c.lat, c.lon], {
       radius: 8,
