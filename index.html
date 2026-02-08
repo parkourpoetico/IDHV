@@ -15,6 +15,7 @@
       height: 100%;
       margin: 0;
       font-family: Georgia, serif;
+      background: #f5f5f5;
     }
 
     #map,
@@ -33,48 +34,61 @@
 
     #back-btn {
       position: absolute;
-      top: 14px;
-      left: 14px;
+      top: 16px;
+      left: 16px;
       z-index: 1100;
       background: rgba(255,255,255,0.95);
       border: 1px solid #ccc;
-      padding: 8px 12px;
+      padding: 10px 14px;
       cursor: pointer;
       font-size: 14px;
+      border-radius: 6px;
     }
 
-    /* POPUP POÉTICO */
+    /* POPUP LITERARIO */
     .leaflet-popup-content {
       margin: 0;
     }
 
     .story-popup {
-      max-width: 280px;
+      width: 340px;
+      max-height: 420px;
+      overflow-y: auto;
       text-align: center;
+      padding: 14px;
     }
 
     .story-popup img {
       width: 100%;
-      border-radius: 6px;
-      margin-bottom: 12px;
+      border-radius: 8px;
+      margin-bottom: 16px;
     }
 
     .popup-text {
-      font-size: 15px;
-      line-height: 1.6;
+      font-size: 16px;
+      line-height: 1.75;
+      color: #222;
     }
 
     .popup-text p {
-      margin: 0 0 12px 0;
+      margin: 0 0 16px 0;
+    }
+
+    /* Scroll discreto */
+    .story-popup::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .story-popup::-webkit-scrollbar-thumb {
+      background: #ccc;
+      border-radius: 4px;
     }
   </style>
 </head>
 <body>
 
-<!-- MAPA GENERAL -->
 <div id="map"></div>
 
-<!-- MAPA CIUDAD -->
 <div id="city-view">
   <button id="back-btn">← Volver al mapa</button>
 </div>
@@ -82,10 +96,6 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
-  /* =========================
-     DATOS
-     ========================= */
-
   const ciudades = [
     {
       ciudad: "Berlín",
@@ -106,10 +116,6 @@
     ]
   };
 
-  /* =========================
-     MAPA GENERAL
-     ========================= */
-
   const map = L.map("map");
 
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -117,10 +123,6 @@
   }).addTo(map);
 
   map.setView([52, 10], 5);
-
-  /* =========================
-     MAPA DE CIUDAD
-     ========================= */
 
   let cityMap = null;
   let cityMarkers = [];
@@ -167,10 +169,6 @@
     document.getElementById("city-view").style.display = "none";
     setTimeout(() => map.invalidateSize(), 100);
   };
-
-  /* =========================
-     MARCADOR MAPA GENERAL
-     ========================= */
 
   ciudades.forEach(c => {
     const marker = L.circleMarker([c.lat, c.lon], {
