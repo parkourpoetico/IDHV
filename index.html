@@ -45,9 +45,7 @@
       border-radius: 6px;
     }
 
-    /* =========================
-       POPUP LITERARIO
-       ========================= */
+    /* POPUP LITERARIO */
 
     .leaflet-popup-content {
       margin: 0;
@@ -77,7 +75,6 @@
       margin: 0 0 14px 0;
     }
 
-    /* Scroll discreto */
     .story-popup::-webkit-scrollbar {
       width: 6px;
     }
@@ -102,16 +99,35 @@
 
 <script>
   /* =========================
-     DATOS
+     CIUDADES
      ========================= */
 
   const ciudades = [
     {
+      ciudad: "Oporto",
+      lat: 41.1579,
+      lon: -8.6291
+    },
+    {
+      ciudad: "Nápoles",
+      lat: 40.8518,
+      lon: 14.2681
+    },
+    {
       ciudad: "Berlín",
       lat: 52.5200,
       lon: 13.4050
+    },
+    {
+      ciudad: "Estambul",
+      lat: 41.0082,
+      lon: 28.9784
     }
   ];
+
+  /* =========================
+     PUNTOS POR CIUDAD
+     ========================= */
 
   const puntosCiudad = {
     "Berlín": [
@@ -122,7 +138,11 @@
         imagen: "images/images/berlin/alexanderplatz.jpg",
         texto: "./textos/berlin/alexanderplatz.html"
       }
-    ]
+    ],
+
+    "Oporto": [],
+    "Nápoles": [],
+    "Estambul": []
   };
 
   /* =========================
@@ -135,7 +155,7 @@
     attribution: "&copy; OpenStreetMap contributors"
   }).addTo(map);
 
-  map.setView([52, 10], 5);
+  map.setView([45, 12], 4);
 
   /* =========================
      MAPA DE CIUDAD
@@ -189,7 +209,7 @@
   };
 
   /* =========================
-     MARCADOR MAPA GENERAL
+     MARCADORES MAPA GENERAL
      ========================= */
 
   ciudades.forEach(c => {
