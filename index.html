@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Mapa narrativo</title>
+  <title>IDHV – Mapa narrativo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <link
@@ -39,39 +39,42 @@
       z-index: 1100;
       background: rgba(255,255,255,0.95);
       border: 1px solid #ccc;
-      padding: 10px 14px;
+      padding: 8px 12px;
       cursor: pointer;
       font-size: 14px;
       border-radius: 6px;
     }
 
-    /* POPUP LITERARIO */
+    /* =========================
+       POPUP LITERARIO
+       ========================= */
+
     .leaflet-popup-content {
       margin: 0;
     }
 
     .story-popup {
-      width: 340px;
-      max-height: 420px;
+      width: 260px;
+      max-height: 300px;
       overflow-y: auto;
       text-align: center;
-      padding: 14px;
+      padding: 12px;
     }
 
     .story-popup img {
       width: 100%;
       border-radius: 8px;
-      margin-bottom: 16px;
+      margin-bottom: 12px;
     }
 
     .popup-text {
-      font-size: 16px;
-      line-height: 1.75;
+      font-size: 15px;
+      line-height: 1.7;
       color: #222;
     }
 
     .popup-text p {
-      margin: 0 0 16px 0;
+      margin: 0 0 14px 0;
     }
 
     /* Scroll discreto */
@@ -87,8 +90,10 @@
 </head>
 <body>
 
+<!-- MAPA GENERAL -->
 <div id="map"></div>
 
+<!-- MAPA DE CIUDAD -->
 <div id="city-view">
   <button id="back-btn">← Volver al mapa</button>
 </div>
@@ -96,6 +101,10 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
+  /* =========================
+     DATOS
+     ========================= */
+
   const ciudades = [
     {
       ciudad: "Berlín",
@@ -116,6 +125,10 @@
     ]
   };
 
+  /* =========================
+     MAPA GENERAL
+     ========================= */
+
   const map = L.map("map");
 
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -123,6 +136,10 @@
   }).addTo(map);
 
   map.setView([52, 10], 5);
+
+  /* =========================
+     MAPA DE CIUDAD
+     ========================= */
 
   let cityMap = null;
   let cityMarkers = [];
@@ -139,7 +156,7 @@
       ).addTo(cityMap);
     }
 
-    cityMap.setView([ciudad.lat, ciudad.lon], 13);
+    cityMap.setView([ciudad.lat, ciudad.lon], 14);
 
     cityMarkers.forEach(m => cityMap.removeLayer(m));
     cityMarkers = [];
@@ -152,12 +169,13 @@
 
       const marker = L.marker([p.lat, p.lon]).addTo(cityMap);
 
-      marker.bindPopup(`
-        <div class="story-popup">
+      marker.bindPopup(
+        `<div class="story-popup">
           <img src="${p.imagen}" alt="${p.nombre}">
           ${textoHTML}
-        </div>
-      `);
+        </div>`,
+        { maxWidth: 280 }
+      );
 
       cityMarkers.push(marker);
     }
@@ -170,9 +188,13 @@
     setTimeout(() => map.invalidateSize(), 100);
   };
 
+  /* =========================
+     MARCADOR MAPA GENERAL
+     ========================= */
+
   ciudades.forEach(c => {
     const marker = L.circleMarker([c.lat, c.lon], {
-      radius: 8,
+      radius: 7,
       fillColor: "#2A81CB",
       color: "#1F4E79",
       weight: 1,
