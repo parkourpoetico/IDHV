@@ -1,1 +1,2 @@
-Imágenes de Berlín
+images/
+└── berlin/
