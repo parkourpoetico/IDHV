@@ -43,19 +43,29 @@
       font-size: 14px;
     }
 
+    /* POPUP POÉTICO */
+    .leaflet-popup-content {
+      margin: 0;
+    }
+
     .story-popup {
-      max-width: 260px;
+      max-width: 280px;
+      text-align: center;
     }
 
     .story-popup img {
       width: 100%;
       border-radius: 6px;
-      margin-bottom: 8px;
+      margin-bottom: 12px;
     }
 
-    .story-popup .text {
-      font-size: 14px;
-      line-height: 1.4;
+    .popup-text {
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+    .popup-text p {
+      margin: 0 0 12px 0;
     }
   </style>
 </head>
@@ -64,7 +74,7 @@
 <!-- MAPA GENERAL -->
 <div id="map"></div>
 
-<!-- MAPA DE CIUDAD -->
+<!-- MAPA CIUDAD -->
 <div id="city-view">
   <button id="back-btn">← Volver al mapa</button>
 </div>
@@ -90,8 +100,8 @@
         nombre: "Alexanderplatz",
         lat: 52.5219,
         lon: 13.4132,
-        texto: "auf wiedersehen",
-        imagen: "images/images/berlin/alexanderplatz.jpg"
+        imagen: "images/images/berlin/alexanderplatz.jpg",
+        texto: "./textos/berlin/alexanderplatz.html"
       }
     ]
   };
@@ -115,7 +125,7 @@
   let cityMap = null;
   let cityMarkers = [];
 
-  function openCity(ciudad) {
+  async function openCity(ciudad) {
     document.getElementById("city-view").style.display = "block";
 
     if (!cityMap) {
@@ -129,28 +139,26 @@
 
     cityMap.setView([ciudad.lat, ciudad.lon], 13);
 
-    // Limpiar puntos anteriores
     cityMarkers.forEach(m => cityMap.removeLayer(m));
     cityMarkers = [];
 
-    // Añadir puntos narrativos
     const puntos = puntosCiudad[ciudad.ciudad] || [];
 
-    puntos.forEach(p => {
+    for (const p of puntos) {
+      const response = await fetch(p.texto);
+      const textoHTML = await response.text();
+
       const marker = L.marker([p.lat, p.lon]).addTo(cityMap);
 
       marker.bindPopup(`
         <div class="story-popup">
           <img src="${p.imagen}" alt="${p.nombre}">
-          <div class="text">
-            <strong>${p.nombre}</strong><br><br>
-            ${p.texto}
-          </div>
+          ${textoHTML}
         </div>
       `);
 
       cityMarkers.push(marker);
-    });
+    }
 
     setTimeout(() => cityMap.invalidateSize(), 100);
   }
